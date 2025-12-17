@@ -1,0 +1,40 @@
+#this is an  Argo CD Application CRD  menaing “Dear Argo CD, here is ONE application you must continuously keep deployed.”
+
+# Argo CD does this automatically:
+
+# 1️⃣ Connects to Git
+# 2️⃣ Reads Kubernetes manifests from a folder
+# 3️⃣ Applies them to the cluster
+# 4️⃣ Watches Git forever
+# 5️⃣ Fixes drift automatically
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: my-app
+  namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: 278584440734.dkr.ecr.us-east-2.amazonaws.com/jisoz/simple-go-app-argo #Watch this ECR image for new tags
+    argocd-image-updater.argoproj.io/users.update-strategy: semver #Use semantic versioning to determine new versions
+    argocd-image-updater.argoproj.io/write-back-method: git #When a new image is found, commit the change back to Git.”
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:jisoz/simple-go-app-argo.git
+    targetRevision: HEAD
+    path: envs/dev/my-app
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+    - Validate=true
+    - CreateNamespace=false
+    - PrunePropagationPolicy=foreground
+    - PruneLast=true

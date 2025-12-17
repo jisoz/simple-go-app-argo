@@ -1,0 +1,15 @@
+---
+namespace: my-app #Forces all resources into my-app namespace
+replicas:
+- name: my-app
+  count: 2 #Overrides Deployment replicas
+images: #Rewrites the container image tag
+- name: 278584440734.dkr.ecr.us-east-2.amazonaws.com/jisoz/simple-go-app-argo
+  newTag: v0.1.1 # put your first tag
+resources:
+- ../../../k8s/base
+
+
+
+# 
+
